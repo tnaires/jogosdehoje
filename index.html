@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <title>Jogos de hoje</title>
+        <script src="main.js" defer></script>
+    </head>
+    <body>
+        <h1>Ligas</h1>
+    </body>
+        <script>
+            const campeonatos = buscarCampeonatos();
+            const divCampeonatos = document.getElementById("campeonatos");
+            divCampeonatos.textContent = campeonatos.map(campeonato => `<p>${campeonato.name}</p>`);
+        </script>
+        <div id="campeonatos"></div>
+</html>
