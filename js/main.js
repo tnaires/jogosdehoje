@@ -21,7 +21,7 @@ async function buscarJogosDeHoje() {
     const hoje = new Date().toLocaleDateString('en-CA');
     let jogos = {};
 
-    Object.entries(CAMPEONATOS).forEach(([idCampeonato, nomeCampeonato]) => {
+    for (const [idCampeonato, nomeCampeonato] of Object.entries(CAMPEONATOS)) {
         try {
             jogos[nomeCampeonato] = [];
             const response = await fetch(`${API_ROOT}}/fixtures?league=${idCampeonato}&date=${hoje}`, requestOptions);
@@ -40,7 +40,7 @@ async function buscarJogosDeHoje() {
             console.error("Falha ao obter dados dos jogos:", error);
             throw error;
         }
-    });
+    }
 
     return jogos;
 }
