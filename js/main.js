@@ -1,39 +1,35 @@
-const API_ROOT = "https://v3.football.api-sports.io"
-const API_KEY = "19c64b519c03bc7dae5839be47d278dc";
+const API_ROOT = "https://espn.com"
 const CAMPEONATOS = {
-    740: "Brasileirão Série A",
-    13:  "Libertadores",
-    73:  "Copa do Brasil",
-    11:  "Sul Americana",
-    17:  "Champions League",
+    85: "Brasileirão Série A",
+    87:  "Copa do Brasil",
+    2254:  "Libertadores",
+    2256:  "Sul Americana",
+    2119:  "Champions League",
 };
 
 async function buscarJogosDeHoje() {
-    var myHeaders = new Headers();
-    myHeaders.append("x-apisports-key", API_KEY);
-
-    var requestOptions = {
-        method: 'GET',
-        headers: myHeaders,
-        redirect: 'follow'
-    };
-
-    const hoje = new Date().toLocaleDateString('en-CA');
     let jogos = {};
 
     for (const [idCampeonato, nomeCampeonato] of Object.entries(CAMPEONATOS)) {
         try {
             jogos[nomeCampeonato] = [];
-            const response = await fetch(`${API_ROOT}}/fixtures?league=${idCampeonato}&date=${hoje}`, requestOptions);
+            const response = await fetch(API_ROOT);
 
             if (!response.ok) {
                 throw new Error(`Erro HTTP com status ${response.status}`);
             }
 
-            const jogosDoDia = await response.json();
+            const dados = await response.json();
+            const jogosDoDia = dados.events.filter(evento => {
+                const campeonatoId = parseInt(evento.leagueId);
+                return Object.keys(CAMPEONATOS).includes(campeonatoId);
+            });
 
             jogosDoDia.forEach(jogoDoDia => {
-                jogos[nomeCampeonato].push(`${jogoDoDia.teams.home.name} x ${jogoDoDia.teams.away.name}`);
+                const mandante = jogoDoDia.competitions[0].competitors[0].team.displayName;
+                const visitante = jogoDoDia.competitions[0].competitors[1].team.displayName;
+
+                jogos[nomeCampeonato].push(`${mandante} x ${visitante}`);
             });
 
         } catch (error) {
