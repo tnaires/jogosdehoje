@@ -1,35 +1,30 @@
-const API_ROOT = "https://espn.com"
 const CAMPEONATOS = {
-    85: "Brasileirão Série A",
-    87:  "Copa do Brasil",
-    2254:  "Libertadores",
-    2256:  "Sul Americana",
-    2119:  "Champions League",
+    4351: "Brasileirão Série A",
+    4680:  "Copa do Brasil",
+    4405:  "Libertadores",
+    4771:  "Sul Americana",
+    4481:  "Champions League",
 };
 
 async function buscarJogosDeHoje() {
+    const hoje = new Date().toLocaleDateString('en-CA');
     let jogos = {};
 
     for (const [idCampeonato, nomeCampeonato] of Object.entries(CAMPEONATOS)) {
         try {
             jogos[nomeCampeonato] = [];
-            const response = await fetch(API_ROOT);
+            const response = await fetch(`https://thesportsdb.com/api/v1/json/1/eventsday.php?d=${hoje}&s=Soccer`);
 
             if (!response.ok) {
                 throw new Error(`Erro HTTP com status ${response.status}`);
             }
 
             const dados = await response.json();
-            const jogosDoDia = dados.events.filter(evento => {
-                const campeonatoId = parseInt(evento.leagueId);
-                return Object.keys(CAMPEONATOS).includes(campeonatoId);
-            });
+            const jogosDoDia = dados.events.filter(evento =>
+                Object.keys(CAMPEONATOS).includes(evento.idLeague));
 
             jogosDoDia.forEach(jogoDoDia => {
-                const mandante = jogoDoDia.competitions[0].competitors[0].team.displayName;
-                const visitante = jogoDoDia.competitions[0].competitors[1].team.displayName;
-
-                jogos[nomeCampeonato].push(`${mandante} x ${visitante}`);
+                jogos[nomeCampeonato].push(`${jogoDoDia.strHomeTeam} x ${jogoDoDia.strAwayTeam}`);
             });
 
         } catch (error) {
