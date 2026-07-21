@@ -1,6 +1,14 @@
+const API_ROOT = "https://v3.football.api-sports.io"
 const API_KEY = "19c64b519c03bc7dae5839be47d278dc";
+const CAMPEONATOS = {
+    740: "Brasileirão Série A",
+    13:  "Libertadores",
+    73:  "Copa do Brasil",
+    11:  "Sul Americana",
+    17:  "Champions League",
+};
 
-async function buscarCampeonatos() {
+async function buscarJogosDeHoje() {
     var myHeaders = new Headers();
     myHeaders.append("x-apisports-key", API_KEY);
 
@@ -10,27 +18,50 @@ async function buscarCampeonatos() {
         redirect: 'follow'
     };
 
-    try {
-        const response = await fetch("https://v1.afl.api-sports.io/leagues", requestOptions);
+    const hoje = new Date().toLocaleDateString('en-CA');
+    let jogos = {};
 
-        if (!response.ok) {
-            throw new Error(`Erro HTTP com status ${response.status}`);
+    Object.entries(CAMPEONATOS).forEach(([idCampeonato, nomeCampeonato]) => {
+        try {
+            jogos[nomeCampeonato] = [];
+            const response = await fetch(`${API_ROOT}}/fixtures?league=${idCampeonato}&date=${hoje}`, requestOptions);
+
+            if (!response.ok) {
+                throw new Error(`Erro HTTP com status ${response.status}`);
+            }
+
+            const jogosDoDia = await response.json();
+
+            jogosDoDia.forEach(jogoDoDia => {
+                jogos[nomeCampeonato].push(`${jogoDoDia.teams.home.name} x ${jogoDoDia.teams.away.name}`);
+            });
+
+        } catch (error) {
+            console.error("Falha ao obter dados dos jogos:", error);
+            throw error;
         }
+    });
 
-        const campeonatos = await response.json();
-        return campeonatos.response;
-    } catch (error) {
-        console.error("Falha ao obter campeonatos:", error);
-        throw error;
-    }
+    return jogos;
 }
 
 async function inicializar() {
-    const campeonatos = await buscarCampeonatos();
-    const divCampeonatos = document.getElementById("campeonatos");
+    const dadosJogos = await buscarJogosDeHoje();
+    const divJogos = document.getElementById("jogos");
 
-    if (campeonatos && campeonatos.length > 0) {
-        divCampeonatos.innerHTML = campeonatos.map(campeonato => `<p>${campeonato.name}</p>`).join('');
+    if (dadosJogos && dadosJogos.length > 0) {
+        Object.entries(dadosJogos).forEach(([campeonato, jogos]) => {
+            const pCampeonato = document.createElement("p");
+            pCampeonato.textContent = campeonato;
+            divJogos.appendChild(pCampeonato);
+
+            jogos.forEach(jogo => {
+                const pJogo = document.createElement("p");
+                pJogo.textContent = jogo;
+                divJogos.appendChild(pJogo);
+            });
+            
+        });
     } else {
         divCampeonatos.innerHTML = "<p>Nenhum campeonato pra exibir.</p>";
     }
