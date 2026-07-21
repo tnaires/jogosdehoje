@@ -18,9 +18,22 @@ async function buscarCampeonatos() {
         }
 
         const campeonatos = await response.json();
-        return campeonatos;
+        return campeonatos.response;
     } catch (error) {
         console.error("Falha ao obter campeonatos:", error);
         throw error;
     }
 }
+
+async function inicializar() {
+    const campeonatos = await buscarCampeonatos();
+    const divCampeonatos = document.getElementById("campeonatos");
+
+    if (campeonatos && campeonatos.length > 0) {
+        divCampeonatos.innerHTML = campeonatos.map(campeonato => `<p>${campeonato.name}</p>`).join('');
+    } else {
+        divCampeonatos.innerHTML = "<p>Nenhum campeonato pra exibir.</p>";
+    }
+}
+
+inicializar();
